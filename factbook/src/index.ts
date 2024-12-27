@@ -3,11 +3,13 @@ import {StdioServerTransport} from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
     CallToolRequestSchema,
     ListToolsRequestSchema,
+    ListResourcesRequestSchema,
+    ReadResourceRequestSchema
   } from "@modelcontextprotocol/sdk/types.js";
   import { z } from "zod";
 import { FactbookResponse } from "./types/factbook.js";
 
-  const ROOT = "https://github.com/factbook/factbook.json/raw/master/"
+  const ROOT = "https://raw.githubusercontent.com/factbook/factbook.json/master/"
   const USER_AGENT="factbook-mcp/1.0"
 
 
@@ -21,7 +23,8 @@ const server = new Server(
     },
     {
         capabilities: {
-            tools:{}
+            tools: {},
+            resources: {}
         }
     }
 )
@@ -29,6 +32,35 @@ const server = new Server(
 const GetCountryInfoSchema = z.object({
     country: z.string()
 })
+
+server.setRequestHandler(ListResourcesRequestSchema, async (request) => {
+    
+    return {
+        resources: [
+            {
+                uri: "file:///resources/regions.json",
+                mimeType: "application/json",
+                name: "Regions",
+                description: "A list of all regions for the AI to use in the API"
+            }
+        ]
+    }
+})
+
+server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
+    const uri = request.params.uri
+    if(uri === "file:///resources/regions.json"){
+        return {
+            contents: [
+                {
+                    mimeType: "application/json",
+                    uri: "file:///resources/regions.json",
+                }
+            ]
+        }
+    }
+    throw new Error("Resource not found");
+});
 
 server.setRequestHandler(ListToolsRequestSchema, async (request) => {
     return {
@@ -43,7 +75,8 @@ server.setRequestHandler(ListToolsRequestSchema, async (request) => {
                             type: "string",
                             description: "A short country identifier used by the CIA World Factbook. Note that this is the original GEC (formerly FIPS) codes, not ISO. For example, au for austria, gm for germany, etc. All data is fetched as raw JSON."
                         }
-                    }
+                    },
+                    required: ["country"]
                 }
             },
             // {
@@ -69,10 +102,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try {
         if (name === "get-country-info") {
             const {country} = GetCountryInfoSchema.parse(args);
-            const code = country.toUpperCase();
             const TEMP_HARDCODED_CONTINENT = "europe"
 
-            const resp = await fetch(`${ROOT}/${TEMP_HARDCODED_CONTINENT}/${code}.json`, {
+            const resp = await fetch(`https://raw.githubusercontent.com/factbook/factbook.json/master/europe/${country}.json`, {
                 headers: {
                     "User-Agent": USER_AGENT,
                     "Accept": "application/json"
@@ -84,7 +116,12 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
             }
             
             const data: FactbookResponse = await resp.json();
-            return { data };
+            return { content: [
+                {
+                    type: "text",
+                    text: JSON.stringify(data)
+                }
+            ]};
         }
         return { error: `Unknown tool ${name}` };
     } catch (error) {
@@ -102,7 +139,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 async function main(){
     const transport = new StdioServerTransport()
     await server.connect(transport)
-    console.log("Factbook MCP server is running on stdio")
+    // console.log("Factbook MCP server is running on stdio")
 }
 
 main().catch((error) => {
