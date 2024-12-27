@@ -4,7 +4,7 @@
     "factbook-mcp": "./build/index.js"
   },
   "name": "factbook-mcp",
-  "version": "3.0.0",
+  "version": "4.0.0",
   "description": "Pull info about countries via the CIA Factbook, using the model context protocol",
   "main": "index.js",
   "scripts": {
