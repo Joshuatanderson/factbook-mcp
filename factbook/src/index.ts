@@ -8,6 +8,7 @@ import {
   } from "@modelcontextprotocol/sdk/types.js";
   import { z } from "zod";
 import { FactbookResponse } from "./types/factbook.js";
+import { regions } from "./resources/regions.js";
 
   const ROOT = "https://raw.githubusercontent.com/factbook/factbook.json/master/"
   const USER_AGENT="factbook-mcp/1.0"
@@ -23,8 +24,12 @@ const server = new Server(
     },
     {
         capabilities: {
-            tools: {},
-            resources: {}
+            tools: {
+
+            },
+            resources: {
+ 
+            }
         }
     }
 )
@@ -55,6 +60,7 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
                 {
                     mimeType: "application/json",
                     uri: "file:///resources/regions.json",
+                    text: JSON.stringify(regions)
                 }
             ]
         }

@@ -2,6 +2,7 @@ import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { CallToolRequestSchema, ListToolsRequestSchema, ListResourcesRequestSchema, ReadResourceRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { z } from "zod";
+import { regions } from "./resources/regions.js";
 const ROOT = "https://raw.githubusercontent.com/factbook/factbook.json/master/";
 const USER_AGENT = "factbook-mcp/1.0";
 const server = new Server({
@@ -39,6 +40,7 @@ server.setRequestHandler(ReadResourceRequestSchema, async (request) => {
                 {
                     mimeType: "application/json",
                     uri: "file:///resources/regions.json",
+                    text: JSON.stringify(regions)
                 }
             ]
         };
