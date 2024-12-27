@@ -34,53 +34,56 @@ server.setRequestHandler(ListToolsRequestSchema, async (request) => {
                     }
                 }
             },
-            {
-                name: "get-factbook-codes",
-                description: "Get a list of all country codes for the CIA World Factbook",
-                // inputSchema: {
-                //     type: "object",
-                //     properties: {
-                //         continents: {
-                //             type: "string",
-                //             description: "The continent to get codes for. Valid values are: Africa, Antarctica, Asia, Europe, North America, Oceania, and South America."
-                //         }
-                //     }
-                // }
-            }
+            // {
+            //     name:"get-factbook-codes",
+            //     description: "Get a list of all country codes for the CIA World Factbook",
+            //     // inputSchema: {
+            //     //     type: "object",
+            //     //     properties: {
+            //     //         continents: {
+            //     //             type: "string",
+            //     //             description: "The continent to get codes for. Valid values are: Africa, Antarctica, Asia, Europe, North America, Oceania, and South America."
+            //     //         }
+            //     //     }
+            //     // }
+            // }
         ]
     };
 });
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
     const { name, arguments: args } = request.params;
-    const headers = {
-        "User-Agent": USER_AGENT,
-        "Accept": "application/json"
-    };
     try {
         if (name === "get-country-info") {
             const { country } = GetCountryInfoSchema.parse(args);
             const code = country.toUpperCase();
             const TEMP_HARDCODED_CONTINENT = "europe";
-            const resp = await fetch(`${ROOT}/${TEMP_HARDCODED_CONTINENT}/${code}.json`, { headers });
+            const resp = await fetch(`${ROOT}/${TEMP_HARDCODED_CONTINENT}/${code}.json`, {
+                headers: {
+                    "User-Agent": USER_AGENT,
+                    "Accept": "application/json"
+                }
+            });
             if (!resp.ok) {
-                throw new Error(`Failed to fetch data: ${resp.statusText}`);
+                return { error: `Failed to fetch data: ${resp.statusText}` };
             }
             const data = await resp.json();
-            return {
-                data
-            };
+            return { data };
         }
+        return { error: `Unknown tool ${name}` };
     }
     catch (error) {
-        return {
-            error: "Failed to fetch data"
-        };
+        if (error instanceof z.ZodError) {
+            throw new Error(`Invalid arguments: ${error.errors
+                .map((e) => `${e.path.join(".")}: ${e.message}`)
+                .join(", ")}`);
+        }
+        throw error;
     }
 });
 async function main() {
     const transport = new StdioServerTransport();
     await server.connect(transport);
-    console.log("Factbook MCP server is running on stdio");
+    console.error("Factbook MCP server is running on stdio");
 }
 main().catch((error) => {
     console.error("Fatal error in main()", error);
