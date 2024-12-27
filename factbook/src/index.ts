@@ -18,7 +18,7 @@ const server = new Server(
     {
         name: "factbook",
         version: "1.0.0",
-        description: "Pull information about countries via the MCP",
+        description: "Pull information about countries",
         author: "Joshua Anderson",
         license: "MIT",
     },
@@ -35,7 +35,10 @@ const server = new Server(
 )
 
 const GetCountryInfoSchema = z.object({
-    country: z.string()
+    // TODO: type this as the possible values from a new countries.json file
+    country: z.string(),
+    // TODO: type this as the possible values from the regions.json file
+    region: z.string()
 })
 
 server.setRequestHandler(ListResourcesRequestSchema, async (request) => {
@@ -80,24 +83,15 @@ server.setRequestHandler(ListToolsRequestSchema, async (request) => {
                         country:{
                             type: "string",
                             description: "A short country identifier used by the CIA World Factbook. Note that this is the original GEC (formerly FIPS) codes, not ISO. For example, au for austria, gm for germany, etc. All data is fetched as raw JSON."
+                        },
+                        region: {
+                            type: "string",
+                            description: "The region to get the country info from. Valid values are: africa, antarctica, australia-oceania, central-america-n-caribbean, europe, middle-east, south-america, and south-asia."
                         }
                     },
-                    required: ["country"]
+                    required: ["country", "region"]
                 }
             },
-            // {
-            //     name:"get-factbook-codes",
-            //     description: "Get a list of all country codes for the CIA World Factbook",
-            //     // inputSchema: {
-            //     //     type: "object",
-            //     //     properties: {
-            //     //         continents: {
-            //     //             type: "string",
-            //     //             description: "The continent to get codes for. Valid values are: Africa, Antarctica, Asia, Europe, North America, Oceania, and South America."
-            //     //         }
-            //     //     }
-            //     // }
-            // }
         ]
     }
 })
@@ -107,10 +101,9 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
     try {
         if (name === "get-country-info") {
-            const {country} = GetCountryInfoSchema.parse(args);
-            const TEMP_HARDCODED_CONTINENT = "europe"
+            const {country, region} = GetCountryInfoSchema.parse(args);
 
-            const resp = await fetch(`https://raw.githubusercontent.com/factbook/factbook.json/master/europe/${country}.json`, {
+            const resp = await fetch(`${ROOT}/${region}/${country}.json`, {
                 headers: {
                     "User-Agent": USER_AGENT,
                     "Accept": "application/json"
