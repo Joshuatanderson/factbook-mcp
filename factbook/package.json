@@ -1,10 +1,10 @@
 {
   "type": "module",
   "bin": {
-    "factbook": "./build/index.js"
+    "factbook-mcp": "./build/index.js"
   },
   "name": "factbook-mcp",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "Pull info about countries via the CIA Factbook, using the model context protocol",
   "main": "index.js",
   "scripts": {
