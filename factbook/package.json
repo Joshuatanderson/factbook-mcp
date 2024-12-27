@@ -3,11 +3,12 @@
   "bin": {
     "factbook": "./build/index.js"
   },
-  "name": "factbook",
-  "version": "1.0.0",
-  "description": "",
+  "name": "factbook-mcp",
+  "version": "2.0.0",
+  "description": "Pull info about countries via the CIA Factbook, using the model context protocol",
   "main": "index.js",
   "scripts": {
+    "prepare": "npm run build",
     "build": "tsc && cp -r src/resources build/",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,9 +20,11 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
+    "express": "^4.21.2",
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@types/express": "^5.0.0",
     "@types/node": "^22.10.2",
     "typescript": "^5.7.2"
   }

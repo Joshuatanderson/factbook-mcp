@@ -79,6 +79,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
     try {
         if (name === "get-country-info") {
             const { country, region } = GetCountryInfoSchema.parse(args);
+            const TEMP_HARDCODED_CONTINENT = "europe";
             const resp = await fetch(`${ROOT}/${region}/${country}.json`, {
                 headers: {
                     "User-Agent": USER_AGENT,
